@@ -4,13 +4,12 @@
 rm(list = ls())
 options(scipen = 999)
 
-#Librerías
-sapply(c("data.table","httr","rvest","compiler","RSelenium","lubridate","readxl","purrr", "stringr", "tidyr",
-         "DBI", "odbc", "keyring", "readr"),
+#LibrerÃ­as
+sapply(c("data.table","httr","rvest","compiler","RSelenium","lubridate","readxl","purrr", "stringr", "tidyr", "DBI", "odbc", "keyring", "readr"), 
        require, character.only = T, quietly = T)
 
 #Escritorio
-setwd("//192.168.100.101/g/nicolas_rojas/viz_webpage/sist_pensiones_chileno/pilar_contributivo")
+#setwd("")
 
 #Cargar datos. Los datos se cargan desde la base de datos SQL. Si es que se cae, cargarlos desde las carpetas
 #afiliados_tipo <- fread("Inputs/afiliados_tipo.csv", integer64 = "numeric")
@@ -18,22 +17,22 @@ setwd("//192.168.100.101/g/nicolas_rojas/viz_webpage/sist_pensiones_chileno/pila
 #cotizantes_fondo <- fread("Inputs/cotizantes_fondo.csv", integer64 = "numeric")
 #cotizantes_afp <- fread("Inputs/cotizantes_afp.csv", integer64 = "numeric")
 
-#Conexión a SQL
-con <- dbConnect(odbc(), 
-                 Driver = "SQL Server", 
-                 Server = "192.168.100.149",
-                 Database = "pensiones",
-                 trusted_connection = "yes",
-                 uid = "estudios",
-                 pdw = key_get("sql_password", "nicolas_rojas"), #Cambiar contraseña: script password
-                 encoding = "latin1")
+#ConexiÃ³n a SQL
+#con <- dbConnect(odbc(), 
+#                 Driver = "SQL Server", 
+#                 Server = "192.168.100.149",
+#                 Database = "pensiones",
+#                 trusted_connection = "yes",
+#                 uid = "estudios",
+#                 pdw = key_get("sql_password", "nicolas_rojas"),
+#                 encoding = "latin1")
 
 #Importar datos desde SQL
-afiliados_tipo <- data.table(dbReadTable(con, "afiliados_tipo"))
-afiliados_saldo <- data.table(dbReadTable(con, "afiliados_saldo"))
-cotizantes_fondo <- data.table(dbReadTable(con, "cotizantes_fondo"))
-cotizantes_afp <- data.table(dbReadTable(con, "cotizantes_afp"))
-serie_uf <- data.table(dbReadTable(con, "serie_uf"))
+#afiliados_tipo <- data.table(dbReadTable(con, "afiliados_tipo"))
+#afiliados_saldo <- data.table(dbReadTable(con, "afiliados_saldo"))
+#cotizantes_fondo <- data.table(dbReadTable(con, "cotizantes_fondo"))
+#cotizantes_afp <- data.table(dbReadTable(con, "cotizantes_afp"))
+#serie_uf <- data.table(dbReadTable(con, "serie_uf"))
 
 #fechas para las descargas
 fechas_consulta <- gsub(pattern = "-|[0-9]{2}$", replacement = "", as.character(seq(from = as.Date("2002-12-01"), 
@@ -48,7 +47,7 @@ fecha_uf <- gsub(pattern = "-[0-9]{2}", replacement = "", as.character(seq(from 
 ### COTIZANTES E INGRESO IMPONIBLE ####
 #######################################
 
-#Función para descargar datos de cotizantes del sistema de pensiones
+#FunciÃ³n para descargar datos de cotizantes del sistema de pensiones
 descargar_cotizantes <- function() {
   
   #Descargar los datos en una carpeta temporal
@@ -66,53 +65,53 @@ descargar_cotizantes <- function() {
                                                              "numeric","numeric","numeric","numeric"))))
   
   #Cambiar nombres de las variables
-  dt <- dt[,.(fecha = Fecha, afp = AFP, n_dependientes_total = `N° de Cotizantes Dependientes`,
-              n_dependientes_hombres = `N° de Cotizantes Dependientes Masculino`, 
-              n_dependientes_mujeres = `N° de Cotizantes Dependientes Femenino`, 
-              n_dependientes_sininfo = `N° de Cotizantes Dependientes sin información de sexo`, 
-              n_independientes_total = `N° de Cotizantes Independientes`, 
-              n_independientes_hombres = `N° de Cotizantes Independientes Masculino`,
-              n_independientes_mujeres = `N° de Cotizantes Independientes Femenino`,
-              n_independientes_sininfo = `N° de Cotizantes Independientes sin información de sexo`,
-              n_voluntarios_total = `N° de Cotizantes Afil. voluntarios`, 
-              n_voluntarios_hombres = `N° de Cotizantes Afil. voluntarios Masculino`,
-              n_voluntarios_mujeres = `N° de Cotizantes Afil. voluntarios Femenino`,
-              n_voluntarios_sininfo = `N° de Cotizantes Afil. voluntarios sin información de sexo`,
-              n_total_ambossexo = `N° de Cotizantes`,
-              n_total_hombres = `N° de Cotizantes  Masculino`,
-              n_total_mujeres = `N° de Cotizantes  Femenino`, 
-              n_total_sininfo = `N° de Cotizantes  sin información de sexo`,
+  dt <- dt[,.(fecha = Fecha, afp = AFP, n_dependientes_total = `NÂ° de Cotizantes Dependientes`,
+              n_dependientes_hombres = `NÂ° de Cotizantes Dependientes Masculino`, 
+              n_dependientes_mujeres = `NÂ° de Cotizantes Dependientes Femenino`, 
+              n_dependientes_sininfo = `NÂ° de Cotizantes Dependientes sin informaciÃ³n de sexo`, 
+              n_independientes_total = `NÂ° de Cotizantes Independientes`, 
+              n_independientes_hombres = `NÂ° de Cotizantes Independientes Masculino`,
+              n_independientes_mujeres = `NÂ° de Cotizantes Independientes Femenino`,
+              n_independientes_sininfo = `NÂ° de Cotizantes Independientes sin informaciÃ³n de sexo`,
+              n_voluntarios_total = `NÂ° de Cotizantes Afil. voluntarios`, 
+              n_voluntarios_hombres = `NÂ° de Cotizantes Afil. voluntarios Masculino`,
+              n_voluntarios_mujeres = `NÂ° de Cotizantes Afil. voluntarios Femenino`,
+              n_voluntarios_sininfo = `NÂ° de Cotizantes Afil. voluntarios sin informaciÃ³n de sexo`,
+              n_total_ambossexo = `NÂ° de Cotizantes`,
+              n_total_hombres = `NÂ° de Cotizantes  Masculino`,
+              n_total_mujeres = `NÂ° de Cotizantes  Femenino`, 
+              n_total_sininfo = `NÂ° de Cotizantes  sin informaciÃ³n de sexo`,
               ing_dependientes_total = `Ing. Imp. Prom. Cotizantes Dependientes`,
               ing_dependientes_hombres = `Ing. Imp. Prom. Cotizantes Dependientes Masculino`,
               ing_dependientes_mujeres = `Ing. Imp. Prom. Cotizantes Dependientes Femenino`,
-              ing_dependientes_sininfo = `Ing. Imp. Prom. Cotizantes Dependientes sin información de sexo`,
+              ing_dependientes_sininfo = `Ing. Imp. Prom. Cotizantes Dependientes sin informaciÃ³n de sexo`,
               ing_independientes_total = `Ing. Imp. Prom. Cotizantes Independientes`,
               ing_independientes_hombres = `Ing. Imp. Prom. Cotizantes Independientes Masculino`,
               ing_independientes_mujeres = `Ing. Imp. Prom. Cotizantes Independientes Femenino`,
-              ing_independientes_sininfo = `Ing. Imp. Prom. Cotizantes Independientes sin información de sexo`,
+              ing_independientes_sininfo = `Ing. Imp. Prom. Cotizantes Independientes sin informaciÃ³n de sexo`,
               ing_voluntarios_total = `Ing. Imp. Prom. Cotizantes Afil. voluntarios`,
               ing_voluntarios_hombres = `Ing. Imp. Prom. Cotizantes Afil. voluntarios Masculino`,
               ing_voluntarios_mujeres = `Ing. Imp. Prom. Cotizantes Afil. voluntarios Femenino`,
-              ing_voluntarios_sininfo = `Ing. Imp. Prom. Cotizantes Afil. voluntarios sin información de sexo`,
+              ing_voluntarios_sininfo = `Ing. Imp. Prom. Cotizantes Afil. voluntarios sin informaciÃ³n de sexo`,
               ing_total_ambossexo = `Ing. Imp. Prom. Cotizantes`,
               ing_total_hombres =  `Ing. Imp. Prom. Cotizantes  Masculino`,
               ing_total_mujeres = `Ing. Imp. Prom. Cotizantes  Femenino`,
-              ing_total_sininfo = `Ing. Imp. Prom. Cotizantes  sin información de sexo`)]
+              ing_total_sininfo = `Ing. Imp. Prom. Cotizantes  sin informaciÃ³n de sexo`)]
   
-  #Pasar la tabla de ancho a largo y armar las columnas de interés
+  #Pasar la tabla de ancho a largo y armar las columnas de interÃ©s
   dt <- melt(dt, id.vars = c(1,2), variable.name = "factor", value.name = "num_monto")
   dt <- separate(dt, col = "factor", into = c("valor", "tipo_cotizante", "sexo"), sep = "_")
   
   #Eliminar los datos que no son necesarios. Ejemplo: Totales
   dt <- dt[!grepl("^total",tipo_cotizante)][!(grepl("^total|^ambossexo", sexo))][!grepl("^TOTAL",afp)]
   
-  #renombrar variables y variables categóricas y eliminar columnas no requeridas
+  #renombrar variables y variables categÃ³ricas y eliminar columnas no requeridas
   dt[, ":="(valor = ifelse(valor == "n", "num_cotizantes","ing_prom"),
             fecha = as.character(fecha),
             afp = str_to_title(afp),
             sexo = ifelse(sexo == "sininfo", "s/i", sexo))]
   
-  #Pasar la tabla del largo a lo ancho para separar las columnas monto y número
+  #Pasar la tabla del largo a lo ancho para separar las columnas monto y nÃºmero
   dt <- dcast(dt, formula = fecha + afp + tipo_cotizante + sexo ~ valor, value.var = "num_monto")
   
   #Pasar a ceros los missing value
@@ -130,7 +129,7 @@ cotizantes_afp <- descargar_cotizantes()
 cotizantes_afp[, ":="(ing_prom = ifelse(ing_prom == 0, NA_integer_, ing_prom),
                       num_cotizantes = ifelse(num_cotizantes == 0, NA_integer_, num_cotizantes))]
 
-#Información trimestral (por ahora se ocupa la información mensual)
+#InformaciÃ³n trimestral (por ahora se ocupa la informaciÃ³n mensual)
 #cotizantes <- cotizantes[grepl("\\b3\\b|\\b6\\b|\\b9\\b|\\b12\\b", month(fecha))]
 
 #Guardar datos en la unidad de red
@@ -143,7 +142,7 @@ dbWriteTable(con, "cotizantes_afp", cotizantes_afp, overwrite = T)
 ### COTIZANTES POR EDAD, TIPO, SEXO y FONDO ###
 ###############################################
 
-#Función para descargar cotizantes
+#FunciÃ³n para descargar cotizantes
 descargar_cotizantes_fondo <- function(fechas, bd) {
   
   if (missing(bd)) {
@@ -153,21 +152,21 @@ descargar_cotizantes_fondo <- function(fechas, bd) {
     bd <- bd
   }
   
-  #Lista vacía para guardar los datos
+  #Lista vacÃ­a para guardar los datos
   consolidado <- list()
   
-  #Conexión remota a Chrome
+  #ConexiÃ³n remota a Chrome
   remDr <- remoteDriver(remoteServerAddr = "192.168.100.34", port = 4445L, browserName = "chrome")
   remDr$open()
   
-  #Loop para ir fecha por fecha descargando la información
+  #Loop para ir fecha por fecha descargando la informaciÃ³n
   for (fecha in fechas) {
     if (fecha %in% unique(gsub(pattern = "-|01$","",x = bd$fecha))) next
     
-    #Auxiliar para determinar la posición en donde se guardan los datos
+    #Auxiliar para determinar la posiciÃ³n en donde se guardan los datos
     i <- match(fecha,fechas)
     
-    #Navegar a la información de número de cotizantes por tipo de fondo
+    #Navegar a la informaciÃ³n de nÃºmero de cotizantes por tipo de fondo
     remDr$navigate("https://www.spensiones.cl/apps/centroEstadisticas/paginaCuadrosCCEE.php?menu=sci&menuN1=cotycot&menuN2=tipfon")
     
     tryCatch({
@@ -178,7 +177,7 @@ descargar_cotizantes_fondo <- function(fechas, bd) {
                                                          "/",substr(fecha,5,6),"/17A']"))
       webelem$clickElement()
       
-      #Entrar a la información por edad, tipo y sexo (n°5)
+      #Entrar a la informaciÃ³n por edad, tipo y sexo (nÂ°5)
       webelem <- remDr$findElements(using = "css", paste0("[value = 'Ver']"))
       webelem[[5]]$clickElement()
       
@@ -186,7 +185,7 @@ descargar_cotizantes_fondo <- function(fechas, bd) {
       columns <- c("sexo", "< 20", "[20-25)", "[25-30)", "[30-35)", "[35-40)", "[40-45)", "[45-50)", "[50-55)",
                    "[55-60)", "[60-65)", "[65-70)", ">=70", "sin info", "total")
       
-      #Función para extraer las tabla según el tipo de fondo
+      #FunciÃ³n para extraer las tabla segÃºn el tipo de fondo
       extraer_tablas <- function(fondo) {
         
         #Variable auxiliar para definir la tabla a extraer
@@ -252,7 +251,7 @@ descargar_cotizantes_fondo <- function(fechas, bd) {
         #Eliminar los totales
         tabla <- tabla[!grepl("total", tramo_edad)]
         
-        #Crear la fecha, el fondo y pasar a dato numerico el número de cotizantes
+        #Crear la fecha, el fondo y pasar a dato numerico el nÃºmero de cotizantes
         tabla[, ":="(tipo_fondo = fondo, fecha = paste(year(ym(fecha)), substr(fecha,5,6), "01",sep = "-"),
                      num_cotizantes = as.numeric(gsub("\\.", "", num_cotizantes)))]
         
@@ -276,7 +275,7 @@ descargar_cotizantes_fondo <- function(fechas, bd) {
   }
   return(rbindlist(consolidado, use.names = T))
   
-  #Cerrar conexión remota
+  #Cerrar conexiÃ³n remota
   remDr$close()
 
 }
@@ -324,7 +323,7 @@ dbWriteTable(con, "cotizantes_fondo", cotizantes_fondo, overwrite = T)
 ### AFILIADOS POR SALDO ####
 ############################
 
-#Función para descargar afiliados por tipo de fondo
+#FunciÃ³n para descargar afiliados por tipo de fondo
 descargar_afiliados_saldo <- function(fechas, bd) {
   
   if (missing(bd)) {
@@ -334,21 +333,21 @@ descargar_afiliados_saldo <- function(fechas, bd) {
     bd <- bd
   }
   
-  #Lista vacía para guardar los datos
+  #Lista vacÃ­a para guardar los datos
   consolidado <- list()
   
-  #Conexión remota a Chrome
+  #ConexiÃ³n remota a Chrome
   remDr <- remoteDriver(remoteServerAddr = "192.168.100.34", port = 4445L, browserName = "chrome")
   remDr$open()
   
-  #Loop para ir fecha por fecha descargando la información
+  #Loop para ir fecha por fecha descargando la informaciÃ³n
   for (fecha in fechas) {
     if (fecha %in% unique(gsub(pattern = "-|01$","",x = bd$fecha))) next
     
-    #Auxiliar para determinar la posición en donde se guardan los datos
+    #Auxiliar para determinar la posiciÃ³n en donde se guardan los datos
     i <- match(fecha,fechas)
     
-    #Navegar a la información de número de cotizantes por tipo de fondo
+    #Navegar a la informaciÃ³n de nÃºmero de cotizantes por tipo de fondo
     remDr$navigate("https://www.spensiones.cl/apps/centroEstadisticas/paginaCuadrosCCEE.php?menu=sci&menuN1=afil&menuN2=sdomovcci")
     
     tryCatch({
@@ -359,7 +358,7 @@ descargar_afiliados_saldo <- function(fechas, bd) {
                                                          "/",substr(fecha,5,6),"/09A']"))
       webelem$clickElement()
       
-      #Entrar a la información
+      #Entrar a la informaciÃ³n
       webelem <- remDr$findElements(using = "css", paste0("[value = 'Ver']"))
       webelem[[8]]$clickElement()
       
@@ -381,7 +380,7 @@ descargar_afiliados_saldo <- function(fechas, bd) {
       #Ordenar la columna tramo de edad
       dt <- melt(dt, id.vars = "tramo_saldo_miles", variable.name = "tramo_edad", value.name = "num_afiliados")
       
-      #Crear la fecha, el fondo y pasar a dato numerico el número de cotizantes
+      #Crear la fecha, el fondo y pasar a dato numerico el nÃºmero de cotizantes
       dt[, ":="(fecha = paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-"), 
                 num_afiliados = as.numeric(gsub("\\.", "", num_afiliados)))]
       
@@ -392,7 +391,7 @@ descargar_afiliados_saldo <- function(fechas, bd) {
   }
   return(rbindlist(consolidado, use.names = T))
   
-  #Cerrar conexión remota
+  #Cerrar conexiÃ³n remota
   remDr$close()
   
 }
@@ -428,9 +427,9 @@ if (ncol(afiliados_saldo_nuevo != 0)) {
     grepl("50000$|60000$", tramo_saldo_miles), "($40MM, $60MM]",
     grepl("80000$", tramo_saldo_miles), "($60MM, $80MM]",
     grepl("-100000$", tramo_saldo_miles), "($80MM, $100MM]", 
-    default =  "más de $100MM")]
+    default =  "mÃ¡s de $100MM")]
   
-  #Sumar los afiliados según los nuevos tramos
+  #Sumar los afiliados segÃºn los nuevos tramos
   afiliados_saldo_nuevo <- afiliados_saldo_nuevo[, .(num_afiliados = sum(num_afiliados, na.rm = T)), 
                                                  by =.(fecha, tramo_edad, tramo_saldo)]
   
@@ -463,7 +462,7 @@ descargar_afiliados_tipo <- function(fechas) {
   #Crear un archivo temporal para guardar el excel que se descarga
   archivo_temporal <- tempfile(fileext = ".xls")
   
-  #URL de donde se descarga la información
+  #URL de donde se descarga la informaciÃ³n
   url <- paste0("https://www.spensiones.cl/inf_estadistica/series_afp/afiliados/afiliados_tipo_sexo_afp.xls")
   
   #Descargar datos en el archivo temporal
@@ -472,7 +471,7 @@ descargar_afiliados_tipo <- function(fechas) {
   #Leer los datos
   dt <- data.table(suppressMessages(read_excel(path = archivo_temporal, skip = 1)))[c(1:961),]
   
-  #Pasar las columnas correspondientes a numéricas
+  #Pasar las columnas correspondientes a numÃ©ricas
   cols <- grep("^VOL|^Vol",names(dt), value = T)
   dt[, (cols) := lapply(.SD, function(x) as.numeric(gsub("-", 0, x))), .SDcols = cols]
   
@@ -496,29 +495,29 @@ descargar_afiliados_tipo <- function(fechas) {
   dt[, ":="(sexo = gsub("sininfo", "s/i", sexo))]
             #fecha = gsub("-[0-9]{2}$", "", fecha))]
   
-  #Segunda fuente de información para datos faltantes
-  #Lista vacía para guardar los datos
+  #Segunda fuente de informaciÃ³n para datos faltantes
+  #Lista vacÃ­a para guardar los datos
   consolidado <- list()
   
-  #Conexión remota a Chrome
+  #ConexiÃ³n remota a Chrome
   remDr <- remoteDriver(remoteServerAddr = "192.168.100.34", port = 4445L, browserName = "chrome")
   remDr$open()
   
-  #Si por alguna razón no se carga la primera fuente de información 
+  #Si por alguna razÃ³n no se carga la primera fuente de informaciÃ³n 
   if (missing(dt) == T) dt <- data.table(fecha = character(), afp = character(), 
                                          tipo_afiliado = character(), sexo = character(), 
                                          num_afiliados = integer())
   
-  #Loop para ir fecha por fecha descargando la información
+  #Loop para ir fecha por fecha descargando la informaciÃ³n
   for (fecha in fechas) {
     
-    #No descargar información que ya se descargó
+    #No descargar informaciÃ³n que ya se descargÃ³
     if (fecha %in% unique(gsub("-|01$","",x = dt$fecha))) next
     
-    #índice para guardar las tablas en el consolidado
+    #Ã­ndice para guardar las tablas en el consolidado
     i <- match(fecha, fechas)
     
-    #Navegar a la página web
+    #Navegar a la pÃ¡gina web
     remDr$navigate("https://www.spensiones.cl/apps/centroEstadisticas/paginaCuadrosCCEE.php?menu=sci&menuN1=afil&menuN2=afp")
     
     tryCatch({
@@ -529,11 +528,11 @@ descargar_afiliados_tipo <- function(fechas) {
                                                          "/",substr(fecha,5,6),"/02F']"))
       webelem$clickElement()
       
-      #Entrar a la sección correspondiente
+      #Entrar a la secciÃ³n correspondiente
       webelem <- remDr$findElements(using = "css", paste0("[value = 'Ver']"))
       webelem[[3]]$clickElement()
       
-      #Valores auxiliares para descargar bien la información. Es distinto dependiendo de si es > o < a junio 2016
+      #Valores auxiliares para descargar bien la informaciÃ³n. Es distinto dependiendo de si es > o < a junio 2016
       if (fecha > 201606) {
         a <- 1
         b <- 2
@@ -566,7 +565,7 @@ descargar_afiliados_tipo <- function(fechas) {
       #Cambiar el nombre de las columnas
       names(dt2) <- headers
       
-      #Transformar los valores que corresponden a número
+      #Transformar los valores que corresponden a nÃºmero
       cols <- names(dt2)[c(2:ncol(dt2))]
       dt2[, (cols) := lapply(.SD, function(x) as.numeric(gsub("\\.", "", x))), 
           .SDcols = cols][, afp := str_to_title(afp)]
@@ -589,7 +588,7 @@ descargar_afiliados_tipo <- function(fechas) {
     }, error = print)
   }
   
-  #Cerrar conexión
+  #Cerrar conexiÃ³n
   remDr$close()
   
   #Retornar la base de datos
@@ -614,25 +613,25 @@ dbWriteTable(con, "afiliados_tipo", afiliados_tipo, overwrite = T)
 ### SERIE UF ###
 ################
 
-#Función para extraer la UF del Banco Central
+#FunciÃ³n para extraer la UF del Banco Central
 extraer_uf <- function(fechas) {
   
-  #Crear lista vacía para ir guardando las series anuales
+  #Crear lista vacÃ­a para ir guardando las series anuales
   series_uf <- vector("list", tail(fechas, n = 1))
   
-  #Abrir sesión remota de Chrome
+  #Abrir sesiÃ³n remota de Chrome
   remDr <- remoteDriver(remoteServerAddr = "192.168.100.34", port = 4445L, browserName = "chrome")
   remDr$open()
   
-  #Navegar por la Base de Datos Estadísticos del Banco Central
+  #Navegar por la Base de Datos EstadÃ­sticos del Banco Central
   remDr$navigate("https://si3.bcentral.cl/Siete/ES/Siete/Cuadro/CAP_PRECIOS/MN_CAP_PRECIOS/UF_IVP_DIARIO")
   
   for (fecha in fechas) {
     tryCatch({
-      #Crear un índice para ir guardando los data table
+      #Crear un Ã­ndice para ir guardando los data table
       i <- match(fecha, fechas)
       
-      #Buscar el año para extraer la serie
+      #Buscar el aÃ±o para extraer la serie
       webelem <- remDr$findElement(using = "css", paste0("[value = '",fecha,"']"))
       webelem$clickElement()
       
@@ -661,7 +660,7 @@ extraer_uf <- cmpfun(extraer_uf)
 #Extraer las series de UF
 series_uf <- extraer_uf(fecha_uf)
 
-#Armar serie con la última fecha del mes y quedarse solo con el año y mes en la columna periodo
+#Armar serie con la Ãºltima fecha del mes y quedarse solo con el aÃ±o y mes en la columna periodo
 series_uf <- series_uf[,.(uf = tail(uf, n = 1)), by =.(fecha = paste(year(fecha), substr(fecha,6,7), "01",
                                                                      sep = "-"))]
 #Incluir auxiliar para pesos
@@ -679,14 +678,14 @@ write.csv2(series_uf, "Inputs/series_uf.csv", row.names = F)
 #Guardar datos en base sql
 dbWriteTable(con, "serie_uf", series_uf, overwrite = T)
 
-#Desconectar la conexión a SQL
+#Desconectar la conexiÃ³n a SQL
 dbDisconnect(con)
 
 #######################################
 ### AFILIADOS POR AFP  (EN DESUSO) ####
 #######################################
 
-# #Función para descargar datos de cotizantes del sistema de pensiones
+# #FunciÃ³n para descargar datos de cotizantes del sistema de pensiones
 # descargar_afiliados <- function() {
 #   
 #   #Crear directorio temporal para guardar el excel
@@ -736,24 +735,24 @@ dbDisconnect(con)
 ### AFILIADOS POR TIPO DE FONDO (EN DESUSO) ####
 ################################################
 # 
-# #Función para descargar afiliados por tipo de fondo
+# #FunciÃ³n para descargar afiliados por tipo de fondo
 # descargar_afiliados_fondo <- function(fechas) {
 #   
-#   #Lista vacía para guardar los datos
+#   #Lista vacÃ­a para guardar los datos
 #   consolidado <- list()
 #   
-#   #Conexión remota a Chrome
+#   #ConexiÃ³n remota a Chrome
 #   remDr <- remoteDriver(remoteServerAddr = "192.168.100.34", port = 4445L, browserName = "chrome")
 #   remDr$open()
 #   
-#   #Loop para ir fecha por fecha descargando la información
+#   #Loop para ir fecha por fecha descargando la informaciÃ³n
 #   for (fecha in fechas) {
 #     #if (fecha %in% unique(gsub(pattern = "-","",x = bd$periodo))) next
 #     
-#     #Auxiliar para determinar la posición en donde se guardan los datos
+#     #Auxiliar para determinar la posiciÃ³n en donde se guardan los datos
 #     i <- match(fecha,fechas)
 #     
-#     #Navegar a la información de número de cotizantes por tipo de fondo
+#     #Navegar a la informaciÃ³n de nÃºmero de cotizantes por tipo de fondo
 #     remDr$navigate("https://www.spensiones.cl/apps/centroEstadisticas/paginaCuadrosCCEE.php?menu=sci&menuN1=afil&menuN2=tipfon")
 #     
 #     tryCatch({
@@ -764,7 +763,7 @@ dbDisconnect(con)
 #                                                          "/",substr(fecha,5,6),"/03A']"))
 #       webelem$clickElement()
 #       
-#       #Entrar a la información
+#       #Entrar a la informaciÃ³n
 #       webelem <- remDr$findElements(using = "css", paste0("[value = 'Ver']"))
 #       webelem[[3]]$clickElement()
 #       
@@ -772,7 +771,7 @@ dbDisconnect(con)
 #       columns <- c("sexo", "< 20", "[20-25)", "[25-30)", "[30-35)", "[35-40)", "[40-45)", "[45-50)", "[50-55)",
 #                    "[55-60)", "[60-65)", "[65-70)", ">=70", "sin info")
 #       
-#       #Función para extraer las tabla según el tipo de fondo
+#       #FunciÃ³n para extraer las tabla segÃºn el tipo de fondo
 #       extraer_tablas <- function(fondo) {
 #         
 #         #Variable auxiliar para definir la tabla a extraer
@@ -834,7 +833,7 @@ dbDisconnect(con)
 #         #Cambiar de genero a sexo
 #         dt[, sexo := ifelse(sexo == "Masculino", "hombres", ifelse(sexo == "Femenino", "mujeres", sexo))]
 #         
-#         #Crear la fecha, el fondo y pasar a dato numerico el número de cotizantes
+#         #Crear la fecha, el fondo y pasar a dato numerico el nÃºmero de cotizantes
 #         dt[, ":="(tipo_fondo = fondo, fecha = paste(year(ym(fecha)), substr(fecha,5,6), sep = "-"),
 #                   num_afiliados = as.numeric(gsub("\\.", "", num_afiliados)))]
 #         
@@ -859,7 +858,7 @@ dbDisconnect(con)
 #   }
 #   return(rbindlist(consolidado, use.names = T))
 #   
-#   #Cerrar conexión remota
+#   #Cerrar conexiÃ³n remota
 #   remDr$close()
 #   
 # }
