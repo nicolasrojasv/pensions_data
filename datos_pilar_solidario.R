@@ -4,36 +4,35 @@
 rm(list = ls())
 options(scipen = 999)
 
-#Librerías
-sapply(c("data.table","compiler","lubridate","readxl","readr","janitor","tidyr","purrr","stringr","DBI","odbc",
-         "keyring", "stringi"),
+#LibrerÃ­as
+sapply(c("data.table","compiler","lubridate","readxl","readr","janitor","tidyr","purrr","stringr","DBI","odbc", "keyring", "stringi"),
        require, character.only = T, quietly = T)
 
 #Escritorio
-setwd("//192.168.100.101/g/nicolas_rojas/viz_webpage/sist_pensiones_chileno/pilar_solidario")
+#setwd("")
 
 #Cargar datos ## Los datos ya no se cargan desde CSV, sino que directamente de la base de SQL.
-## Si es que la conexión falla, borrar los # y correr las tres líneas para cargar los datos en CSV. 
+## Si es que la conexiÃ³n falla, borrar los # y correr las tres lÃ­neas para cargar los datos en CSV. 
 #sps_region <- fread("Inputs/sps_region.csv" , integer64 = "numeric")
 #sps_edad <- fread("Inputs/sps_edad.csv", integer64 = "numeric")
 #aps_institucion <- fread("Inputs/aps_institucion.csv", integer64 = "numeric")
 
-#Conexión a SQL
-con <- dbConnect(odbc(), 
-                 Driver = "SQL Server", 
-                 Server = "192.168.100.149",
-                 Database = "pensiones",
-                 trusted_connection = "yes",
-                 uid = "estudios",
-                 pdw = key_get("sql_password", "nicolas_rojas"), #Cambiar contraseña: script password
-                 encoding = "latin1")
+#ConexiÃ³n a SQL
+#con <- dbConnect(odbc(), 
+#                 Driver = "SQL Server", 
+#                 Server = "192.168.100.149",
+#                 Database = "pensiones",
+#                 trusted_connection = "yes",
+#                 uid = "estudios",
+#                 pdw = key_get("sql_password", "nicolas_rojas"), #Cambiar contraseÃ±a: script password
+#                 encoding = "latin1")
 
 #Importar datos desde SQL
-sps_region <- data.table(dbReadTable(con, "sps_region"))
-sps_edad <- data.table(dbReadTable(con, "sps_edad"))
-aps_institucion <- data.table(dbReadTable(con,"aps_institucion"))
+#sps_region <- data.table(dbReadTable(con, "sps_region"))
+#sps_edad <- data.table(dbReadTable(con, "sps_edad"))
+#aps_institucion <- data.table(dbReadTable(con,"aps_institucion"))
 
-#Fechas Información disponibles en la página del pilar solidario de la Súper de Pensiones
+#Fechas InformaciÃ³n disponibles en la pÃ¡gina del pilar solidario de la SÃºper de Pensiones
 fechas_consulta <- gsub(pattern = "-|[0-9]{2}$", replacement = "", as.character(seq(from = as.Date("2008-07-01"), 
                                                                                     to = today(), 
                                                                                     by = "month")))
@@ -42,10 +41,10 @@ fechas_consulta <- gsub(pattern = "-|[0-9]{2}$", replacement = "", as.character(
 ### DATOS DEL SISTEMA DE PENSIONES SOLIDARIAS POR REGION ####
 #############################################################
 
-#Función para descargar datos de beneficiarios y montos pagados por región
+#FunciÃ³n para descargar datos de beneficiarios y montos pagados por regiÃ³n
 descargar_sps_region <- function(fechas, bd) {
   
-  #Si la base de datos no existe en el ambiente, crear una vacía
+  #Si la base de datos no existe en el ambiente, crear una vacÃ­a
   if (missing(bd)) {
     bd <- data.table(region = character(), tipo_beneficio = character(), sexo = character(), 
                      financiamiento = character(), num_beneficiarios = numeric(), mon_beneficiarios = numeric(),
@@ -54,16 +53,16 @@ descargar_sps_region <- function(fechas, bd) {
     bd <- bd
   }
   
-  #Lista vacía para consolidar los datos
+  #Lista vacÃ­a para consolidar los datos
   consolidado <- list()
   
-  #Iterar por fecha para extraer la información
+  #Iterar por fecha para extraer la informaciÃ³n
   for (fecha in fechas) {
     
-    #Saltar fechas que ya están en la base
+    #Saltar fechas que ya estÃ¡n en la base
     if (fecha %in% unique(gsub(pattern = "-|01$","",x = bd$fecha))) next
     
-    #Índice para guardar las tablas
+    #Ãndice para guardar las tablas
     i <- match(fecha,fechas)
     
     tryCatch({
@@ -81,7 +80,7 @@ descargar_sps_region <- function(fechas, bd) {
                        "num_hombres_fin_estatal","monto_hombres_fin_estatal","num_mujeres_fin_cuenta_ind",
                        "monto_mujeres_fin_cuenta_ind","num_hombres_fin_cuenta_ind","monto_hombres_fin_cuenta_ind")
         
-        #Rellenar datos y eliminar los totales y partes vacías
+        #Rellenar datos y eliminar los totales y partes vacÃ­as
         dt <- fill(dt, region)
         dt <- dt[!grepl("^Total",region)]
         dt <- dt[-c(120:125),]
@@ -117,24 +116,24 @@ descargar_sps_region <- function(fechas, bd) {
         #Unir las tablas
         dt <- rbindlist(list(dt_muj_est, dt_hom_est, dt_muj_ind, dt_hom_ind))
         
-        #Crear columnas fecha y numero de región
+        #Crear columnas fecha y numero de regiÃ³n
         dt[, fecha := paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-")]
         dt[, num_region := fcase(region == "Arica y Parinacota", 1,
-                                 region == "Tarapacá", 2,
+                                 region == "TarapacÃ¡", 2,
                                  region == "Antofagasta", 3,
                                  region == "Atacama", 4,
                                  region == "Coquimbo", 5,
-                                 region == "Valparaíso", 6,
+                                 region == "ValparaÃ­so", 6,
                                  region == "Metropolitana de Santiago", 7,
                                  region == "Libertador Gral. Bernardo O'Higgins", 8,
                                  region == "Maule", 9,
-                                 region == "Ñuble", 10,
-                                 region == "Biobío", 11,
-                                 region == "La Araucanía", 12,
-                                 region == "Los Ríos", 13,
+                                 region == "Ã‘uble", 10,
+                                 region == "BiobÃ­o", 11,
+                                 region == "La AraucanÃ­a", 12,
+                                 region == "Los RÃ­os", 13,
                                  region == "Los Lagos", 14,
-                                 region == "Aysén del Gral. Carlos Ibáñez del Campo", 15,
-                                 region == "Magallanes y de la Antártica Chilena", 16,
+                                 region == "AysÃ©n del Gral. Carlos IbÃ¡Ã±ez del Campo", 15,
+                                 region == "Magallanes y de la AntÃ¡rtica Chilena", 16,
                                  default = 0)]
         
         #Guardar los datos en el consolidado
@@ -149,10 +148,10 @@ descargar_sps_region <- function(fechas, bd) {
                               grepl("AYSEN", aux), "AYSEN", 
                               grepl("MAGA", aux), "MAGALLANES", 
                               grepl("METRO", aux), "METROPOLITANA", 
-                              grepl("NUBLE", aux), "CHILLÁN",
-                              grepl("SIN INFORMACION", aux), "Sin Información",
+                              grepl("NUBLE", aux), "CHILLÃN",
+                              grepl("SIN INFORMACION", aux), "Sin InformaciÃ³n",
                               rep_len(TRUE, length(aux)), aux)]
-        region_nuble <- data.table(region = "Ñuble", num_region = 10, aux = "ÑUBLE")
+        region_nuble <- data.table(region = "Ã‘uble", num_region = 10, aux = "Ã‘UBLE")
         region <- rbindlist(list(region, region_nuble), use.names = T)
         
       } else if (as.numeric(fecha) %between% c(201905,202001)) {
@@ -162,7 +161,7 @@ descargar_sps_region <- function(fechas, bd) {
         names(dt) <- c("region","tipo_beneficio","num_mujeres_fin_estatal","monto_mujeres_fin_estatal",
                        "num_hombres_fin_estatal","monto_hombres_fin_estatal")
         
-        #Rellenar las columnas y eliminar datos vacíos
+        #Rellenar las columnas y eliminar datos vacÃ­os
         dt <- fill(dt, region)
         dt <- dt[!grepl("^Total|^Fuente|^Notas|^\\(",region)]
         
@@ -183,24 +182,24 @@ descargar_sps_region <- function(fechas, bd) {
         #Unir las tablas
         dt <- rbindlist(list(dt_muj_est, dt_hom_est))
         
-        #Crear columna fecha y número de región
+        #Crear columna fecha y nÃºmero de regiÃ³n
         dt[, fecha := paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-")]
         dt[, num_region := fcase(region == "Arica y Parinacota", 1,
-                                 region == "Tarapacá", 2,
+                                 region == "TarapacÃ¡", 2,
                                  region == "Antofagasta", 3,
                                  region == "Atacama", 4,
                                  region == "Coquimbo", 5,
-                                 region == "Valparaíso", 6,
+                                 region == "ValparaÃ­so", 6,
                                  region == "Metropolitana de Santiago", 7,
                                  region == "Libertador Gral. Bernardo O'Higgins", 8,
                                  region == "Maule", 9,
-                                 region == "Ñuble", 10,
-                                 region == "Biobío", 11,
-                                 region == "La Araucanía", 12,
-                                 region == "Los Ríos", 13,
+                                 region == "Ã‘uble", 10,
+                                 region == "BiobÃ­o", 11,
+                                 region == "La AraucanÃ­a", 12,
+                                 region == "Los RÃ­os", 13,
                                  region == "Los Lagos", 14,
-                                 region == "Aysén del Gral. Carlos Ibáñez del Campo", 15,
-                                 region == "Magallanes y de la Antártica Chilena", 16,
+                                 region == "AysÃ©n del Gral. Carlos IbÃ¡Ã±ez del Campo", 15,
+                                 region == "Magallanes y de la AntÃ¡rtica Chilena", 16,
                                  default = 0)]
         
         #Guardar los datos en el consolidado
@@ -213,7 +212,7 @@ descargar_sps_region <- function(fechas, bd) {
         names(dt) <- c("region","tipo_beneficio","num_mujeres_fin_estatal","monto_mujeres_fin_estatal",
                        "num_hombres_fin_estatal","monto_hombres_fin_estatal")
         
-        #Rellenar los datos de región y eliminar los totales
+        #Rellenar los datos de regiÃ³n y eliminar los totales
         dt <- fill(dt,region)
         dt <- dt[!grepl("^TOTAL|^Total|^\\(",region)]
         dt[, aux := trimws(gsub("[0-9]{1,}", "", region))][,region := NULL]
@@ -252,7 +251,7 @@ descargar_sps_region <- function(fechas, bd) {
 }
 descargar_sps_region <- cmpfun(descargar_sps_region)
 
-#Descargar datos del sistema de pensiones solidarias por región
+#Descargar datos del sistema de pensiones solidarias por regiÃ³n
 if (exists("sps_region")) {
   
   sps_region_nuevo <- descargar_sps_region(rev(fechas_consulta), sps_region)
@@ -265,7 +264,7 @@ if (exists("sps_region")) {
 
 try({
   
-  #Limpiar variables categóricas y missing values pasarlos a cero
+  #Limpiar variables categÃ³ricas y missing values pasarlos a cero
   sps_region_nuevo[, ":="(tipo_beneficio = trimws(gsub("\\([0-9]\\)", "", tipo_beneficio)),
                    num_beneficiarios = ifelse(is.na(num_beneficiarios), 0, num_beneficiarios),
                    mon_beneficio = ifelse(is.na(mon_beneficio), 0, mon_beneficio))]
@@ -299,10 +298,10 @@ dbWriteTable(con, "sps_region", sps_region, overwrite = T)
 ### DATOS DEL SISTEMA DE PENSIONES SOLIDARIAS POR EDAD ###
 ##########################################################
 
-#Función para obtener los beneficiarios sps por edad
+#FunciÃ³n para obtener los beneficiarios sps por edad
 descargar_sps_edad <- function(fechas, bd) {
   
-  #Si la base de datos no existe en el ambiente, crear una vacía
+  #Si la base de datos no existe en el ambiente, crear una vacÃ­a
   if (missing(bd)) {
     
     bd <- data.table(sexo = character(), tramo_edad = character(), financiamiento = character(),
@@ -315,10 +314,10 @@ descargar_sps_edad <- function(fechas, bd) {
     
   }
   
-  #Crear lista vacía para ir guardando los datos
+  #Crear lista vacÃ­a para ir guardando los datos
   consolidado <- list()
   
-  #Iterar por cada fecha para ir descargando la información
+  #Iterar por cada fecha para ir descargando la informaciÃ³n
   for (fecha in fechas) {
     
     #Saltar las fechas que ya han sido descargadas
@@ -380,12 +379,12 @@ descargar_sps_edad <- function(fechas, bd) {
         dt <- separate(dt, variable, into = c("financiamiento","tipo_beneficio","numero_monto"), sep = "_")
         dt[,":="(financiamiento = ifelse(financiamiento == "Con financiamiento estatal",
                                          "Estatal","Cuenta Individual"),
-                 numero_monto = ifelse(numero_monto == "Número", "num_beneficiarios", "mon_beneficio"))]
+                 numero_monto = ifelse(numero_monto == "NÃºmero", "num_beneficiarios", "mon_beneficio"))]
         
-        #Se pasa la tabla de lo largo a lo ancho para separar los datos de número y monto
+        #Se pasa la tabla de lo largo a lo ancho para separar los datos de nÃºmero y monto
         dt <- dcast(dt, ... ~ numero_monto, value.var = "value")
         
-        #Se crea la fecha de la información
+        #Se crea la fecha de la informaciÃ³n
         dt[, fecha := paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-")]
         
         #se guarda la tabla en el consolidado
@@ -432,18 +431,18 @@ descargar_sps_edad <- function(fechas, bd) {
         #Se leen los datos y se usa el vector headers como nombre de las columnas 
         dt <- data.table(suppressMessages(read_excel(archivo_temporal, skip = 7, col_names = headers)))
         
-        #Se excluyen las filas que no son de interés y se pasa la tabla de lo ancho a lo largo, excluyendo totales
+        #Se excluyen las filas que no son de interÃ©s y se pasa la tabla de lo ancho a lo largo, excluyendo totales
         dt <- dt[grepl("\\-|\\+|^Sin", tramo_edad)]
         dt <- melt(dt, id.vars = 1, variable.factor = F)
         dt <- dt[!grepl("total|Total",variable)]
         
-        #Se separan las variables y se pasa la tabla de lo largo a lo ancho para separar número de monto
+        #Se separan las variables y se pasa la tabla de lo largo a lo ancho para separar nÃºmero de monto
         dt <- separate(dt, variable, into = c("sexo","tipo_beneficio","numero_monto"), sep = "_")
         dt[,":="(financiamiento = "Estatal",
-                 numero_monto = ifelse(numero_monto == "Número", "num_beneficiarios", "mon_beneficio"))]
+                 numero_monto = ifelse(numero_monto == "NÃºmero", "num_beneficiarios", "mon_beneficio"))]
         dt <- dcast(dt, ... ~ numero_monto, value.var = "value")
         
-        #Se crea la variable fecha y se igual la variable tipo de beneficio a las tablas más actuales
+        #Se crea la variable fecha y se igual la variable tipo de beneficio a las tablas mÃ¡s actuales
         dt[, ":="(fecha = paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-"),
                   tipo_beneficio = ifelse(tipo_beneficio == "APS Vejez subsidio definido",
                                           "APS Vejez Subsidio Definido", tipo_beneficio))]
@@ -490,7 +489,7 @@ descargar_sps_edad <- function(fechas, bd) {
         #Se leen los datos y se pasa el vector headers para el nombre de la columna
         dt <- data.table(suppressMessages(read_excel(archivo_temporal, skip = 7, col_names = headers)))
         
-        #Igualar la columna tramo de edad con la versión de fechas más actuales
+        #Igualar la columna tramo de edad con la versiÃ³n de fechas mÃ¡s actuales
         dt <- dt[grepl("\\-|\\+|^SIN|^HASTA|^MAS", tramo_edad)]
         tramos_edad <- aux1[,.(tramo_edad = unique(tramo_edad))]
         tramos_edad[,tramo_edad := ifelse(tramo_edad == "+100", "- 20",
@@ -502,22 +501,22 @@ descargar_sps_edad <- function(fechas, bd) {
         dt <- dt[!grepl("^TOTALES",variable)]
         dt <- separate(dt, variable, into = c("tipo_beneficio","numero_monto"), sep = "_")
         dt[,":="(financiamiento = "Estatal",
-                 numero_monto = ifelse(numero_monto == "NÚMERO", "num_beneficiarios", "mon_beneficio"))]
+                 numero_monto = ifelse(numero_monto == "NÃšMERO", "num_beneficiarios", "mon_beneficio"))]
         
-        #Pasar la tabla de largo al ancho para serar los números de los montos
+        #Pasar la tabla de largo al ancho para serar los nÃºmeros de los montos
         dt <- dcast(dt, ... ~ numero_monto, value.var = "value")
         
-        #Hacer coincidir la columna tipo de beneficio con los valores de fechas más actuales
+        #Hacer coincidir la columna tipo de beneficio con los valores de fechas mÃ¡s actuales
         dt[,tipo_beneficio := tolower(tipo_beneficio)]
         dt <- merge.data.table(dt, 
-                               aux2[,.(tipo_beneficio = gsub("ó","o",tolower(unique(tipo_beneficio))),
+                               aux2[,.(tipo_beneficio = gsub("Ã³","o",tolower(unique(tipo_beneficio))),
                                        tipo_beneficio_bien = unique(tipo_beneficio))], 
                                by = "tipo_beneficio", all.x = T)
         dt[,tipo_beneficio := tipo_beneficio_bien][,tipo_beneficio_bien := NULL]
         
         #Crear la variable fecha
         dt[, ":="(fecha = paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-"),
-                  sexo = "Sin información")]
+                  sexo = "Sin informaciÃ³n")]
         
         #Guardar la tabla de datos en el consolidado
         consolidado[[i]] <- dt
@@ -559,7 +558,7 @@ if (exists("sps_edad")) {
 
 try({
   
-  #Limpiar variables categóricas
+  #Limpiar variables categÃ³ricas
   sps_edad_nuevo[, ":="(tipo_beneficio = trimws(gsub("\\([0-9]\\)", "", tipo_beneficio)),
                         num_beneficiarios = ifelse(is.na(num_beneficiarios), 0, num_beneficiarios),
                         mon_beneficio = ifelse(is.na(mon_beneficio), 0, mon_beneficio))]
@@ -585,13 +584,13 @@ write.csv2(sps_edad, "Inputs/sps_edad.csv", row.names = F)
 dbWriteTable(con, "sps_edad", sps_edad, overwrite = T)
 
 ############################################################
-### DATOS DE APORTES SOLIDARIOS POR INSTITUCIÓN PAGADORA ###
+### DATOS DE APORTES SOLIDARIOS POR INSTITUCIÃ“N PAGADORA ###
 ############################################################
 
-#Función para extraer datos del APS por institución
+#FunciÃ³n para extraer datos del APS por instituciÃ³n
 descargar_aps_institucion <- function(fechas, bd) {
   
-  #Si la base de datos no existe en el ambiente, crear una vacía
+  #Si la base de datos no existe en el ambiente, crear una vacÃ­a
   if (missing(bd)) {
     
     bd <- data.table(tipo_beneficio = character(), sexo = character(), institucion = character(), 
@@ -603,7 +602,7 @@ descargar_aps_institucion <- function(fechas, bd) {
     
   }
   
-  #crear lista vacía para ir guardando los datos
+  #crear lista vacÃ­a para ir guardando los datos
   consolidado <- list()
   
   #Iterara cada fecha para ir descargando los datos
@@ -612,7 +611,7 @@ descargar_aps_institucion <- function(fechas, bd) {
     #Saltar las fechas que ya han sido descargadas
     if (fecha %in% unique(gsub(pattern = "-|01$","",x = bd$fecha))) next
     
-    #Generar un índice para guardar en orden las tablas en el consolidado sin sobreescribir una encima de la otra
+    #Generar un Ã­ndice para guardar en orden las tablas en el consolidado sin sobreescribir una encima de la otra
     i <- match(fecha,fechas)
     
     tryCatch({
@@ -664,7 +663,7 @@ descargar_aps_institucion <- function(fechas, bd) {
         
         #Eliminar los totales de la tabla y cambiar el nombre de algunos atributos
         dt <- dt[!grepl("Total",sexo)][!grepl("Total", institucion)]
-        dt[,":="(numero_monto = ifelse(numero_monto == "Número", "num_beneficiarios", "mon_beneficio"),
+        dt[,":="(numero_monto = ifelse(numero_monto == "NÃºmero", "num_beneficiarios", "mon_beneficio"),
                  sexo = ifelse(sexo == "Hombres","Hombre", "Mujer"))]
         
         #Pasar la tabla de largo a ancho para generar las columnas monto y numero de beneficiarios
@@ -708,7 +707,7 @@ descargar_aps_institucion <- function(fechas, bd) {
                  head4[.x])
         })
         
-        #Leer los datos y asigar el nombre de las columnas según el vector headers
+        #Leer los datos y asigar el nombre de las columnas segÃºn el vector headers
         dt <- data.table(read_excel(archivo_temporal, skip = 7, col_names = headers))
         
         #Eliminar filas innecesarias, pasar la tabla de lo ancho a lo largo para crear columnas relevantes
@@ -721,10 +720,10 @@ descargar_aps_institucion <- function(fechas, bd) {
         dt[, aux := NULL]
         
         #Cambiar el nombre de atributos de algunos variables
-        dt[,":="(numero_monto = ifelse(numero_monto == "Número", "num_beneficiarios", "mon_beneficio"),
+        dt[,":="(numero_monto = ifelse(numero_monto == "NÃºmero", "num_beneficiarios", "mon_beneficio"),
                  sexo = ifelse(sexo == "Hombres","Hombre", "Mujer"))]
         
-        #Pasar la tabla de largo a ancho para difenciar monto de número de beneficiarios
+        #Pasar la tabla de largo a ancho para difenciar monto de nÃºmero de beneficiarios
         dt <- dcast(dt, ... ~ numero_monto, value.var = "value")
         
         #Crear la fecha de la tabla
@@ -767,7 +766,7 @@ descargar_aps_institucion <- function(fechas, bd) {
         #Leer los datos y asignar el vector headers como el nombre de las columnas
         dt <- data.table(read_excel(archivo_temporal, skip = 7, col_names = headers))
         
-        #Eliminar filas innecesarias y se transforman los tramos de edad según los datos de las fechas más actuales
+        #Eliminar filas innecesarias y se transforman los tramos de edad segÃºn los datos de las fechas mÃ¡s actuales
         dt <- dt[grepl("\\+|^HASTA|^MAS|^SIN", tramo_edad)]
         tramos_edad <- aux1[,.(tramo_edad = unique(tramo_edad))]
         tramos_edad[,tramo_edad := ifelse(tramo_edad == "+100", "- 20",
@@ -783,16 +782,16 @@ descargar_aps_institucion <- function(fechas, bd) {
         dt[, aux := NULL]
         
         #Cambiar el nombre los atributos de algunas variables
-        dt[,":="(numero_monto = ifelse(numero_monto == "NÚMERO", "num_beneficiarios", "mon_beneficio"),
-                 sexo = "Sin Información")]
+        dt[,":="(numero_monto = ifelse(numero_monto == "NÃšMERO", "num_beneficiarios", "mon_beneficio"),
+                 sexo = "Sin InformaciÃ³n")]
         
-        #Pasar la tabla de lo largo a lo ancho para separa las columnas monto y número
+        #Pasar la tabla de lo largo a lo ancho para separa las columnas monto y nÃºmero
         dt <- dcast(dt, ... ~ numero_monto, value.var = "value")
         
         #Crear la variable fecha
         dt[, fecha := paste(year(ym(fecha)), substr(fecha,5,6), "01", sep = "-")]
         
-        #modificar la variable institución para asemejarla a los datos de fechas actuales
+        #modificar la variable instituciÃ³n para asemejarla a los datos de fechas actuales
         dt[, institucion := ifelse(!grepl("AFP|IPS|ISL", institucion), 
                                    trimws(gsub(" D", " d",gsub(", Ley", "", str_to_title(institucion)))), 
                                    institucion)]
@@ -825,7 +824,7 @@ descargar_aps_institucion <- function(fechas, bd) {
 
 descargar_aps_institucion <- cmpfun(descargar_aps_institucion)
 
-#Descargar datos de aps por institución
+#Descargar datos de aps por instituciÃ³n
 if (exists("aps_institucion")) {
   
   aps_institucion_nuevo <- descargar_aps_institucion(rev(fechas_consulta), aps_institucion)
@@ -845,7 +844,7 @@ try({
   
   #Transformar los tramos de edad en APS Invalidez (menores de 65) y Vejez (mayores de 65)
   aps_institucion_nuevo[, tipo_beneficio := ifelse(grepl("100|\\[65|75|85|95", tramo_edad), "APS Vejez",
-                                                   ifelse(grepl("Sin", tramo_edad), "Sin información", 
+                                                   ifelse(grepl("Sin", tramo_edad), "Sin informaciÃ³n", 
                                                           "APS Invalidez"))]
   aps_institucion_nuevo <- aps_institucion_nuevo[,.(tipo_beneficio,sexo,institucion,mon_beneficio,num_beneficiarios,
                                                     fecha)]
@@ -870,5 +869,5 @@ write.csv2(aps_institucion, "Inputs/aps_institucion.csv", row.names = F, na = ""
 #Guardar datos en la base relacional SQL pensiones
 dbWriteTable(con, "aps_institucion", aps_institucion, overwrite = T)
 
-#Desconectar la conexión a SQL
+#Desconectar la conexiÃ³n a SQL
 dbDisconnect(con)
